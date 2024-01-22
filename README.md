@@ -13,7 +13,7 @@ The code is adapted from the [CMI-PB GitHub Repo](https://github.com/CMI-PB).
 
 ---
 
-## Understanding the Biology of the Dataset
+## Understanding the Biology of the CMI-PB Dataset
 ### Introduction
 To better understand the biological context underlying this dataset, we have provided the following resources, _as a reference_, ordered in a suggested chronological order. 
 

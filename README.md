@@ -31,7 +31,7 @@ This is a fantastic summary and animation of the basics of the immune system and
 Note: **bolded** words contain definitions
 
 
-#### Plasma Antibody Titer
+#### **Plasma Antibody Titer**
 * **Plasma** is the liquid portion of blood. This is where antibodies and cytokine proteins are found.
 * **Antigens** are components of a foreign substance that elicits an immune response and antibody production against. For our purposes, it is just a term for a specific bacterial component that our immune system recognizes and produces antibodies against.
 * **Antibodies** are proteins that are made from immune cells in our adaptive immunity called B-cells (a PBMC). Each antibody is specific to a given antigen and its function is to mark antigens for removal by other immune cells, and neutralize and encapsulate an antigen (rendering it harmless). This is called opsonization and neutralization, respectively.
@@ -41,7 +41,7 @@ Note: **bolded** words contain definitions
 Our target feature for Plasma Antibody Titer is _MFI_
 
   
-#### Plasma Cytokine Concentration
+#### **Plasma Cytokine Concentration**
 * **Cytokines** are small proteins secreted especially by macrophages, B cells, T cells, mast cells that are important for cell signaling and communication between cells in the immune system. They can also carry signals to other cells, and can broadly influence immunity, inflammation, cell growth and repair, etc.
 * **pg/mL** is simply a unit of measurement for concentration, where pg = picogram (12 orders of magnitude smaller than a gram) per mL of plasma.
 
@@ -50,7 +50,7 @@ Our target feature for Plasma Antibody Titer is _MFI_
 Our target feature for Plasma Cytokine Concentration is _pg/mL_
 
 
-#### PBMC Cell Frequency
+#### **PBMC Cell Frequency**
 Immune cells, along with many cells in our body, carry specialized proteins on the cell surface called receptors. In immune cells, these receptors carry out different functions such as detection of cytokines, signaling molecules, and other immune cell receptors for cell to cell interaction. In immunology, these cell surface receptor proteins are classified by the **cluster of differentiation (CD)** marker. eg CD19, CD4, CD8, etc. The unique composition of cell surface receptors and cluster of differentiation markers allow immunologists to differentiate between different types of immune cells. 
 
 When you come across, for example, CD4+ CD8- expression, it means the cell has CD4 but not CD8. This is a class of T-cell called CD4+ T-cell. 
@@ -65,7 +65,7 @@ Our target feature for PBMC Cell Frequency is _% live cell_
 * This is simply the measure for amount of live immune cells detected in each sub-type.
   
 
-#### PBMC Gene Expression
+#### **PBMC Gene Expression**
 To understand this dataset, watch the following: [Central Dogma](https://www.youtube.com/watch?v=KIvBn6gfRgY)
 --> Each section of DNA that is transcribed into RNA is called a **gene**. This gene, after being . Thus, each protein must come from a specific gene.
 

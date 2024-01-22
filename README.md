@@ -15,7 +15,7 @@ The code is adapted from the [CMI-PB GitHub Repo](https://github.com/CMI-PB).
 
 ## Understanding the Biology of the CMI-PB Dataset
 ### Introduction
-To better understand the biological context underlying this dataset, we have provided the following resources, _as a reference_, ordered in a suggested chronological order. 
+To better understand the biological context underlying this dataset, we have provided the following resources, as a reference, ordered in a suggested chronological order. 
 
 The overall goal of CMI-PB is to provide a public space for a community to share unique modeling techniques/strategies to allow us to better predict the long-term differences in immune response after Pertussis infection due to differences in childhood vaccination type.  Specifically, CMI-PB collects data from volunteers who have had one of two types of Pertussis vaccines (aP or wP, more on the differences later) that are given a Pertussis vaccination as a proxy for infection (since infecting volunteers with actual Pertussis is highly unethical). Our goal is to use that data to see potential reasons as to why there has been a recent surge in Pertussis cases worldwide, and to better understand and characterize the long-term immune response following vaccination with each individual type of Pertussis vaccine.  
 

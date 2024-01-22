@@ -1,6 +1,7 @@
 # Grant Lab Rotation
 A repository to keep track of progress with CMI-PB Pertussis Modeling Challenge during Grant Lab rotation.
 
+---
 
 ### Data Pre-Processing
 
@@ -10,7 +11,7 @@ The code is adapted from the [CMI-PB GitHub Repo](https://github.com/CMI-PB).
 
 ![Working Directory Setup](preprocess_setup.png)
 
-
+---
 
 ## Understanding the Biology of the Dataset
 ### Introduction

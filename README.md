@@ -19,7 +19,7 @@ To better understand the biological context underlying this dataset, we have pro
 The overall goal of CMI-PB is to provide a public space for a community to share unique modeling techniques/strategies to allow us to better predict the long-term differences in immune response after Pertussis infection due to differences in childhood vaccination type.  Specifically, CMI-PB collects data from volunteers who have had one of two types of Pertussis vaccines (aP or wP, more on the differences later) that are given a Pertussis vaccination as a proxy for infection (since infecting volunteers with actual Pertussis is highly unethical). Our goal is to use that data to see potential reasons as to why there has been a recent surge in Pertussis cases worldwide, and to better understand and characterize the long-term immune response following vaccination with each individual type of Pertussis vaccine.  
 
 Firstly, we want to understand how vaccines work and why we need it for herd immunity:
-[Introduction to Vaccines](https://www.youtube.com/watch?v=rb7TVW77ZCs) (watch up to 3:22) 
+[Introduction to Vaccines](https://www.youtube.com/watch?v=rb7TVW77ZCs) (watch up to _3:22_) 
 [What is herd immunity?](https://www.youtube.com/watch?v=kLUzwT9tWxY)
 
 The following resource summarizes Pertussis, its vaccines, and the CMI-PB project: [Introduction to Pertussis](https://bioboot.github.io/cmi-pb_teaching/background/intro_to_pertussis.html)
@@ -57,7 +57,7 @@ When you come across, for example, CD4+ CD8- expression, it means the cell has C
 
 Even within each class of immune cell, such as our T-cells or B-cells, there is an enormous amount of diversity in receptor composition and thus sub-specializations. The following you _do not need to know_, but illustrates that even in the process of maturing, B-cells and T-cells have very diverse receptor compositions. 
 
-![Complexity of CD Classifications in T-cell and B-cell Maturation](btcell.png){: width="50%"}
+<img src="btcell.png" width="500" height="1000">
 
 From this, it becomes easy to demonstrate that our dataset has a lot of immune cells, but these are not all the immune cell sub-types in the human. The dataset relies on an assay that detects a finite amount of cell surface receptors and only in the blood (immune cells are everywhere). Everyday, there are new types of immune cells being characterized, and existing immune cell classifications are constantly debated and redefined. For our purposes, we won't need to go that in-depth. Everything we need can be understood through a simple Google search. 
 

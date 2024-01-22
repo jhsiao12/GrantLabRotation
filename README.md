@@ -57,7 +57,7 @@ When you come across, for example, CD4+ CD8- expression, it means the cell has C
 
 Even within each class of immune cell, such as our T-cells or B-cells, there is an enormous amount of diversity in receptor composition and thus sub-specializations. The following you _do not need to know_, but illustrates that even in the process of maturing, B-cells and T-cells have very diverse receptor compositions. 
 
-<img src="btcell.png" width="500" height="1000">
+<img src="btcell.png" width="600" height="750">
 
 From this, it becomes easy to demonstrate that our dataset has a lot of immune cells, but these are not all the immune cell sub-types in the human. The dataset relies on an assay that detects a finite amount of cell surface receptors and only in the blood (immune cells are everywhere). Everyday, there are new types of immune cells being characterized, and existing immune cell classifications are constantly debated and redefined. For our purposes, we won't need to go that in-depth. Everything we need can be understood through a simple Google search. 
 

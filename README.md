@@ -20,16 +20,20 @@ The overall goal of CMI-PB is to provide a public space for a community to share
 
 Firstly, we want to understand how vaccines work and why we need it for herd immunity:
 [Introduction to Vaccines](https://www.youtube.com/watch?v=rb7TVW77ZCs) (watch up to _3:22_) 
+
 [What is herd immunity?](https://www.youtube.com/watch?v=kLUzwT9tWxY)
 
 The following resource summarizes Pertussis, its vaccines, and the CMI-PB project: [Introduction to Pertussis](https://bioboot.github.io/cmi-pb_teaching/background/intro_to_pertussis.html)
 
 This is an optional resource on the timeline and history of Pertussis and societies' responses to the disease: [History of Pertussis](https://bioboot.github.io/cmi-pb_teaching/timeline/pertussis_timeline.html)
 
+---
+
 ### Basics of the Immune System
 This video is a fantastic summary and animation of the basics of the immune system and how it fights an infection. It's very helpful in providing foundation for understanding the rest of this section: [How the Immune System Works](https://www.youtube.com/watch?v=lXfEK8G8CUI)
 Note: **bolded** words contain definitions
 
+---
 
 ### **Plasma Antibody Titer**
 * **Plasma** is the liquid portion of blood. This is where antibodies and cytokine proteins are found.
@@ -40,7 +44,8 @@ Note: **bolded** words contain definitions
 
 Our target feature for Plasma Antibody Titer is _MFI_
 
-  
+---
+
 ### **Plasma Cytokine Concentration**
 * **Cytokines** are small proteins secreted especially by macrophages, B cells, T cells, mast cells that are important for cell signaling and communication between cells in the immune system. They can also carry signals to other cells, and can broadly influence immunity, inflammation, cell growth and repair, etc.
 * **pg/mL** is simply a unit of measurement for concentration, where pg = picogram (12 orders of magnitude smaller than a gram) per mL of plasma.
@@ -49,6 +54,7 @@ Our target feature for Plasma Antibody Titer is _MFI_
 
 Our target feature for Plasma Cytokine Concentration is _pg/mL_
 
+---
 
 ### **PBMC Cell Frequency**
 Immune cells, along with many cells in our body, carry specialized proteins on the cell surface called receptors. In immune cells, these receptors carry out different functions such as detection of cytokines, signaling molecules, and other immune cell receptors for cell to cell interaction. In immunology, these cell surface receptor proteins are classified by the **cluster of differentiation (CD)** marker. eg CD19, CD4, CD8, etc. The unique composition of cell surface receptors and cluster of differentiation markers allow immunologists to differentiate between different types of immune cells. 
@@ -64,6 +70,7 @@ From this, it becomes easy to demonstrate that our dataset has a lot of immune c
 Our target feature for PBMC Cell Frequency is _% live cell_
 * This is simply the measure for amount of live immune cells detected in each sub-type.
   
+---
 
 ### **PBMC Gene Expression**
 To understand this dataset, watch the following: [Central Dogma](https://www.youtube.com/watch?v=KIvBn6gfRgY)

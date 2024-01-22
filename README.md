@@ -31,7 +31,8 @@ This is an optional resource on the timeline and history of Pertussis and societ
 
 ### Basics of the Immune System
 This video is a fantastic summary and animation of the basics of the immune system and how it fights an infection. It's very helpful in providing foundation for understanding the rest of this section: [How the Immune System Works](https://www.youtube.com/watch?v=lXfEK8G8CUI)
-Note: **bolded** words contain definitions
+
+Note: **bolded** words in the sections below contain definitions
 
 ---
 

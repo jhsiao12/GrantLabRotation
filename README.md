@@ -78,6 +78,7 @@ Our target feature for PBMC Cell Frequency is _% live cell_
 To understand this dataset, watch the following: [Central Dogma](https://www.youtube.com/watch?v=KIvBn6gfRgY)
 --> Each section of DNA that is transcribed into RNA is called a **gene**. This gene, after being . Thus, each protein must come from a specific gene.
 
+* **PBMC** are peripheral blood mononuclear cells. They are isolated from peripheral blood and identified as any blood cell with a round nucleus. This includes immune cells, which is found in this dataset.
 * RNA-sequencing (RNAseq) is the assay used to generate data in this dataframe. It provides a comprehensive snapshot of which _genes_ are being actively transcribed and their relative expression levels between samples/patients. The number of RNA for a given gene is called **transcripts**, and differences in RNA transcripts reveals important insights into differences in gene expression, and therefore cellular state and response. In our case, these differences are differences in the transcripts of immune cells found in the blood between patient samples. 
 * **tpm** is transcripts per million, which is a method of normalization in RNA sequencing to allow comparison of gene expression levels between samples. This is because, in RNA-seq, transcripts that are _read_ by the machine must be mapped to a reference of genes in the human - called **reference genome**.
 

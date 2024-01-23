@@ -76,7 +76,8 @@ Our target feature for PBMC Cell Frequency is _% live cell_
 
 ### **PBMC Gene Expression**
 To understand this dataset, watch the following: [Central Dogma](https://www.youtube.com/watch?v=KIvBn6gfRgY)
---> Each section of DNA that is transcribed into RNA is called a **gene**. This gene, after being . Thus, each protein must come from a specific gene.
+
+Each section of DNA that is transcribed into RNA is called a gene. This gene, after being transcribed, is translated into a specific protein. Thus, each protein must come from a specific, unique gene.
 
 * **PBMC** are peripheral blood mononuclear cells. They are isolated from peripheral blood and identified as any blood cell with a round nucleus. This includes immune cells, which is found in this dataset.
 * RNA-sequencing (RNAseq) is the assay used to generate data in this dataframe. It provides a comprehensive snapshot of which _genes_ are being actively transcribed and their relative expression levels between samples/patients. The number of RNA for a given gene is called **transcripts**, and differences in RNA transcripts reveals important insights into differences in gene expression, and therefore cellular state and response. In our case, these differences are differences in the transcripts of immune cells found in the blood between patient samples. 

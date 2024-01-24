@@ -40,7 +40,8 @@ Note: **bolded** words in the sections below contain definitions
 ### **Plasma Antibody Titer**
 * **Plasma** is the liquid portion of blood. This is where antibodies and cytokine proteins are found.
 * **Antigens** are components of a foreign substance that elicits an immune response and antibody production against. For our purposes, it is just a term for a specific bacterial component that our immune system recognizes and produces antibodies against.
-* **Antibodies** are proteins that are made from immune cells in our adaptive immunity called B-cells (a PBMC). Each antibody is specific to a given antigen and its function is to mark antigens for removal by other immune cells, and neutralize and encapsulate an antigen (rendering it harmless). This is called opsonization and neutralization, respectively.
+* **Antibodies** are proteins that are made from immune cells in our adaptive immunity called B-cells (a PBMC). Each antibody is specific to a given antigen and its function is to mark antigens for removal by other immune cells, and neutralize and encapsulate an antigen (rendering it harmless). This is called opsonization and neutralization, respectively. There are classes of antibodies that perform different functions called IgG, IgM, IgE, IgA, IgD.
+
 * **Titer** is a quantitative measurement for the concentration of antibody.
 * **MFI** is mean fluorescent intensity, which is a measure of how much of that given antibody was detected. The **assay** (analytical experiment to determine something) uses MFI as an output used to determine relative antibody titer. You can convert MFI to actual concentration if you wanted, but you would need to run something called a standard in the assay to determine that (it is not provided in this dataset, so we will use MFI).
 

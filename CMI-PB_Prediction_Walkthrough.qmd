@@ -1,11 +1,11 @@
 ---
-title: "Walkthrough of Predicting IgG Titers Using Lasso Regression"
+title: "Walkthrough of Predicting IgG Titers Using Least Squares Regression"
 author: "Jason Hsiao"
 format: html
 ---
 
 ## Introduction
-This document is a step-by-step walkthrough that demonstrates how to build a prediction model using data from Computational Models of Immunity - Pertussis Boost (CMI-PB) database: https://www.cmi-pb.org/. For this walkthrough, we will use batch-corrected data from the CMI-PB predictional challenge database to predict IgG titers at day 7 post-vaccination. More information about the data can be found on the CMI-PB website. 
+This document is a step-by-step walkthrough that demonstrates how to build a prediction model using data from Computational Models of Immunity - Pertussis Boost (CMI-PB) database: https://www.cmi-pb.org/. For this walkthrough, we will use batch-corrected data from the CMI-PB predictional challenge database to predict IgG titers at day 14 post-vaccination. More information about the data can be found on the CMI-PB website. 
 
 We will be predicting IgG titers using a lasso regression model. As with any machine learning model, we will need to have a prediction dataset and a training dataset. The prediction dataset will contain the data we want to predict, and the training dataset will contain the data we will use to train the model.
 
@@ -24,7 +24,9 @@ library(dplyr)       # for data manipulation
 ## Load Data
 
 Let’s import our antibody titer (ab_titer) data from the CMI-PB database. You will have to download the raw datasets for from the CMI-PB website, under 'Data and Resources' tab. You will need the following files: 
+
 1) Prediction data: 2022BD_plasma_ab_titer.tsv, 2022BD_subject.tsv, 2022BD_specimen.tsv
+
 2) Training data: 2021LD_plasma_ab_titer.tsv, 2021LD_subject.tsv, 2021LD_specimen.tsv
 
 The subject and specimen tables contain metadata about the subjects and specimens, which will be helpful in our predictions. The plasma_ab_titer table contains the antibody titer data.

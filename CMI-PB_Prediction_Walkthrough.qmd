@@ -1,13 +1,16 @@
 ---
-title: "Walkthrough of Predicting IgG Titers Using Least Squares Regression"
+title: "Walkthrough of Predicting IgG Titers Using Tidymodels Machine Learning"
 author: "Jason Hsiao"
+date: "2024-02-13"
 format: html
 ---
 
-## Introduction
-This document is a step-by-step walkthrough that demonstrates how to build a prediction model using data from Computational Models of Immunity - Pertussis Boost (CMI-PB) database: https://www.cmi-pb.org/. For this walkthrough, we will use batch-corrected data from the CMI-PB predictional challenge database to predict IgG titers at day 14 post-vaccination. More information about the data can be found on the CMI-PB website. 
+A website version of this document can be found on [GitHub pages]()
 
-We will be predicting IgG titers using a lasso regression model. As with any machine learning model, we will need to have a prediction dataset and a training dataset. The prediction dataset will contain the data we want to predict, and the training dataset will contain the data we will use to train the model.
+## Introduction
+This document is a step-by-step walkthrough that demonstrates how to build a prediction model using data from Computational Models of Immunity - Pertussis Boost [(CMI-PB) database](https://www.cmi-pb.org/). For this walkthrough, we will use raw data from the CMI-PB predictional challenge database to predict IgG titers at day 14 post-vaccination. More information about the data can be found on the CMI-PB website. 
+
+We will be predicting IgG titers using a basic ordinary least squares (OLS) regression model. As with any machine learning model, we will need to have a prediction dataset and a training dataset. The prediction dataset will contain the data we want to predict, and the training dataset will contain the data we will use to train the model.
 
 We will start by pre-processing the data for modeling, learn how to specify and train the model, then perform a prediction of subject IgG titers at day 14 post-vaccination. 
 
@@ -23,38 +26,50 @@ library(dplyr)       # for data manipulation
 
 ## Load Data
 
-Let’s import our antibody titer (ab_titer) data from the CMI-PB database. You will have to download the raw datasets for from the CMI-PB website, under 'Data and Resources' tab. You will need the following files: 
+Let’s import our antibody titer (ab_titer) data from the online CMI-PB database. We will need the following files: 
 
-1) Prediction data: 2022BD_plasma_ab_titer.tsv, 2022BD_subject.tsv, 2022BD_specimen.tsv
+1) Prediction data: `2022BD_plasma_ab_titer.tsv`, `2022BD_subject.tsv`, `2022BD_specimen.tsv`
 
-2) Training data: 2021LD_plasma_ab_titer.tsv, 2021LD_subject.tsv, 2021LD_specimen.tsv
+2) Training data: `2021LD_plasma_ab_titer.tsv`, `2021LD_subject.tsv`, `2021LD_specimen.tsv`
 
 The subject and specimen tables contain metadata about the subjects and specimens, which will be helpful in our predictions. The plasma_ab_titer table contains the antibody titer data.
 
-Note: Since CMI-PB releases new data every year, the file names and data used in this walkthrough may not be the same as the data you have downloaded. If you have questions about this, there is a helpful 'Solutions Center' where you may post questions and get help from the CMI-PB community.
-
 ```{r, message=FALSE, warning=FALSE}
-# Import the prediction datasets
-prediction_ab <-
-  read_tsv("2022BD_plasma_ab_titer.tsv")
-
-prediction_subject <-
-  read_tsv("2022BD_subject.tsv")
-
-prediction_specimen <-
-  read_tsv("2022BD_specimen.tsv")
+# Specify the url path for training files download
+training_url_path <- "https://www.cmi-pb.org/downloads/cmipb_challenge_datasets/current/2nd_challenge/raw_datasets/training_data/"
 
 # Import the training datasets
-training_ab <- 
-  read_tsv("2021LD_plasma_ab_titer.tsv")
+training_ab_file <- paste0(training_url_path, "2021LD_plasma_ab_titer.tsv")
+training_ab <- read_tsv(training_ab_file)
 
-training_subject <-
-  read_tsv("2021LD_subject.tsv")
+training_subject_file <- paste0(training_url_path, "2021LD_subject.tsv")
+training_subject <- read_tsv(training_subject_file)
 
-training_specimen <-
-  read_tsv("2021LD_specimen.tsv")
+training_specimen_file <- paste0(training_url_path, "2021LD_specimen.tsv")
+training_specimen <- read_tsv(training_specimen_file)
+
+
+# Do the same for prediction datasets
+# Specify the url path for prediction files download (different from training files path)
+prediction_url_path <- "https://www.cmi-pb.org/downloads/cmipb_challenge_datasets/current/2nd_challenge/raw_datasets/prediction_data/"
+
+# Import the prediction datasets
+prediction_ab_file <- paste0(prediction_url_path, "2022BD_plasma_ab_titer.tsv")
+prediction_ab <- read_tsv(prediction_ab_file)
+
+prediction_subject_file <- paste0(prediction_url_path, "2022BD_subject.tsv")
+prediction_subject <- read_tsv(prediction_subject_file)
+
+prediction_specimen_file <- paste0(prediction_url_path, "2022BD_specimen.tsv")
+prediction_specimen <- read_tsv(prediction_specimen_file)
 
 ```
+
+***Note***: Since CMI-PB releases new data every year, the link used below may not be current. If this occurs, You will have to download the raw datasets from the CMI-PB website, under [Data and Resources tab](https://www.cmi-pb.org/blog/prediction-challenge-overview/#Data%20and%20resources).
+
+If you still have trouble locating the files, there is a helpful [Solutions Center](https://discuss.cmi-pb.org/) where you may post questions and get help from the CMI-PB community.
+
+
 ## Data Pre-Processing
 ### Join tables
 
@@ -87,12 +102,16 @@ Now that we have our master tables for the training and prediction datasets, we 
 
 ```{r}
 # Inspect each dataset
-View(training)
-View(prediction)
+head(training)
 
 ```
 
-Woah! That's a lot of data... Since we are only looking at IgG PT, we can filter the data to only include IgG PT.
+```{r}
+head(prediction)
+
+```
+
+Notice that we have IgG against other `antigen`s such as `PRN`, `DT`, etc... We are only looking at IgG `PT`, so let's filter the data to only include `isotype = IgG` and `antigen = PT`.
 
 
 ### Filtering for IgG PT Data
@@ -106,7 +125,7 @@ prediction <- prediction %>% filter(antigen == "PT", isotype == "IgG")
 
 ```
 
-Now, let's plot the data and see what we have:
+Now, let's plot the data of `MFI_normalised` over time (`actual_day_relative_to_boost`) and see what we have:
 ```{r}
 ggplot(training,
        aes(actual_day_relative_to_boost, MFI_normalised,
@@ -123,23 +142,34 @@ While the overall trend is more like a curve, we can see that from day 0 to day 
 
 We can go one-step further and make our model more complex. If we look at the plot above, we can see that `infancy_vac` status has an influence on baseline IgG_PT values (y-intercept), and also the slope from day 0 to day 14 for each subject (each line). We can account for this later when we specify our model by adding `infancy_vac` as a predictor in the model. 
 
-Firstly, let's split the training data into a training set and a validation set. 
+***OPTIONAL***: try and color the lines by other variables such as `biological_sex` to see if there are any differences in the data there! You may also try use these other variables as predictors in the model.
+
+Now, let's firstly split the training data into a training set and a validation set. 
 
 
 ## Split the Training Data
 
 In machine learning, it is important to split the training data into a training set and a validation set. The training set will be used to train the model, and the validation set will be used to evaluate the model's performance. Once we have the model, we can use it to predict the antibody titers in the prediction dataset by applying the model to the prediction dataset.
 
-You are welcome to look for other resources to help you understand this concept, since it is a fundamental concept in machine learning. Here is a helpful [article] (https://medium.com/@nahmed3536/the-motivation-for-train-test-split-2b1837f596c3#:~:text=In%20Machine%20Learning%20(ML)%20workflows,training%20and%2020%25%20for%20testing) to get you started.
+You are welcome to look for other resources to help you understand this concept, since it is a fundamental concept in machine learning. Here is a helpful [article](https://medium.com/@nahmed3536/the-motivation-for-train-test-split-2b1837f596c3#:~:text=In%20Machine%20Learning%20(ML)%20workflows,training%20and%2020%25%20for%20testing) to get you started.
+
+First, we want to set the seed. The seed is a number that is used to initialize the random number generator. This ensures that the random numbers generated by the model (i.e. the training and validation sets chosen by the computer) will be the same each time the code is run. This is important for reproducibility, as it allows us to get the same results each time we run the code.
 
 ```{r}
-# First, we want to set the seed. The seed is a number that is used to initialize the random number generator. This ensures that the random numbers generated by the model (i.e. the training and validation sets chosen by the computer) will be the same each time the code is run. This is important for reproducibility, as it allows us to get the same results each time we run the code.
 set.seed(123) 
 
-# Here, we are using 80% of the data for training and 20% for testing. We use a special function called group_initial_split to ensure that the training and validation sets are chosen by treating data from a given subject_id as a group (it cannot be split into smaller parts by, say, actual_day_relative_to_boost). This is important, since we want to ensure that all the data for a given subject_id is either in the training set or the testing set, but not both. Otherwise, we will have data that is split up, called data leakage, which can lead to poor model performance.
+```
+
+Then, we use 80% of the training data for training and 20% for validation. We use a special function called `group_initial_split` to ensure that the training and validation sets are chosen by treating data from a given `subject_id` as a group (it cannot be split into smaller parts by, say, `actual_day_relative_to_boost`). This is important, since we want to ensure that all the data for a given subject_id is either in the training set or the testing set, but not both. Otherwise, we will have data that is split up, called data leakage, which can lead to poor model performance.
+
+```{r}
 training_split <- group_initial_split(training, prop = 0.8, group = "subject_id")
 
-# Now we can extract the training and testing sets from the split
+```
+
+Now we can extract the training and testing sets from the split:
+
+```{r}
 training_train <- training_split %>% training()
 training_validation <- training_split %>% testing()
 
@@ -200,15 +230,44 @@ validation_df <- validation_df %>% filter(actual_day_relative_to_boost <= 14)
 
 ## Setting Up the Model
 
-```{r}
-# Specify the model
-lm_train <- lm(MFI_normalised ~ actual_day_relative_to_boost + MFI_normalised_baseline + infancy_vac, data = training_df)
+In the tidymodels framework, we can specify our linear model using the `lm()` function. We then use the `set.engine()` function to specify that we want to use the `lm()` function to fit the model.
 
-# Apply lm_train to the testing data and score for accuracy
+```{r}
+# Specifying the model using the tidymodels framework
+lm_spec <- 
+  linear_reg() %>% 
+  set_engine("lm") # using the default lm engine (ordinary least squares regression) 
+
+lm_train <- lm_spec %>% # establishing the model to fit the training data with
+  fit(MFI_normalised ~ actual_day_relative_to_boost + MFI_normalised_baseline + infancy_vac, 
+      data = training_df) # specifying the predictors and the response variable that the model will use to fit the training data
+
+# Apply lm_train to the validation data
 ab_validation <- validation_df %>%
-  mutate(predicted = predict(lm_train, newdata = validation_df))
+  mutate(predict(lm_train, validation_df)) # adding a new column to the validation dataframe that contains the predicted antibody titers
 
 ```
+
+***IMPORTANT!***: The advantage of this using tidymodels is that if we wanted to change the model to a different type of model, we can simply change the `linear_reg()` function to another function, such as Lasso regression, by changing the arguments and engine as follows:
+
+```{r}
+# Specifying the model using the tidymodels framework
+#   lm_spec <- 
+#     linear_reg(penalty = 0, mixture = 1) %>%
+#     set_engine("glmnet")
+
+# Fitting the model to the training data
+#   lm_train <- lm_spec %>% 
+#     fit(MFI_normalised ~ actual_day_relative_to_boost + MFI_normalised_baseline +                  infancy_vac, data = training_df)
+
+# Apply lm_train to the validation data and score for accuracy
+#   predicted_val <- predict(lm_train, validation_df)
+
+```
+
+Feel free to play around with different models and see how they perform. You may consult the [documentation](https://parsnip.tidymodels.org/articles/Examples.html#linear_reg-models) for the `tidymodels` framework for more information on different models and how to specify them.
+
+Ultimately, using tidymodels allows us to easily switch between different models, which would otherwise be more cumbersome to do using the base R functions.
 
 
 ### Evaluating the Model
@@ -221,7 +280,7 @@ ggplot(ab_validation,
   aes(x = actual_day_relative_to_boost, y = MFI_normalised,
       col = infancy_vac)) +
   geom_point() +
-  geom_line(aes(y = predicted), color = "black") +
+  geom_line(aes(y = .pred), color = "black") + 
   facet_wrap(~subject_id) +
   theme_bw()
 
@@ -230,9 +289,11 @@ It appears our model is doing a decent job of predicting the antibody titers fro
 
 ```{r}
 # Calculate the Spearman correlation
-cor.test(ab_validation$MFI_normalised, ab_validation$predicted, method = "spearman")
+cor.test(ab_validation$MFI_normalised, ab_validation$.pred, method = "spearman")
 
 ```
+
+***IMPORTANT***: depending on how you modify the model specifications, predictor variables, etc, you might get different Spearman correlation values. In making such specifications, you must consider overfitting/underfitting, a concept in machine learning that is very important to consider. Here is a [resource](https://medium.com/mlearning-ai/overfitting-vs-underfitting-6a41b3c6a9ad) to get you started on these concepts.
 
 As given by the relatively high Spearman correlation, the model is doing a good job of predicting the antibody titers.
 
@@ -267,10 +328,10 @@ new_points <- new_points %>%
 # We now have a dataframe that contains all the information needed for the model to predict the antibody titers at d14 for each subject in the prediction dataset.
 # Apply the model to the prediction dataset
 ab_prediction <- new_points %>%
-  mutate(predicted = predict(lm_train, newdata = new_points))
+  mutate(predicted = predict(lm_train, new_data = new_points)) 
 
 # Let's inspect ab_prediction to see the predicted antibody titers at d14 for each subject_id
-ab_prediction
+head(ab_prediction)
 
 ```
 
@@ -278,3 +339,16 @@ ab_prediction
 ## Importing Actual d14 Antibody Titers to Compare
 
 While we have been working with a 2022 dataset (prediction dataset) that only has d0 baseline values, we have access to the actual d14 antibody titers from the 2022 dataset. We can use these to compare our predicted values to the actual values. Let's get this from the CMI-PB website (2nd challenge results).
+
+
+
+
+## Discussion
+
+As mentioned previously, the tidymodels framework allows you to change the model type easily. This is useful if you want to compare different models to see which one performs best. Feel free to try different models and compare their performance qualitatively by plotting the predicted values against the actual values for each subject in the validation dataset, and quantitatively using Spearman correlation. You may also try other methods of evaluating the model, such as mean squared error or root mean squared error. 
+
+You may also choose to change the predictor variables in the model to see if you can improve the model's performance. For example, you may want to include other variables such as age, sex, race, etc. to see if they improve the model's performance. 
+
+Finally, you may choose to look at other datasets in the CMI-PB challenge to see if you can model other types of data, such as PBMC cell frequency. These other datasets may be found [here](https://www.cmi-pb.org/blog/prediction-challenge-overview/#Data%20and%20resources).
+
+We hope that this tutorial has given you a good introduction to the tidymodels framework and how to use it to fit a basic machine learning model to predict antibody titers. For additional information/resources, please refer to the [tidymodels website](https://www.tidymodels.org/). Some other useful things to learn to deepen you knowledge include: Lasso regression, Ridge regression, Elastic net regression, and any other type of modeling method you are interested in.

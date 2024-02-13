@@ -1,0 +1,278 @@
+---
+title: "Walkthrough of Predicting IgG Titers Using Lasso Regression"
+author: "Jason Hsiao"
+format: html
+---
+
+## Introduction
+This document is a step-by-step walkthrough that demonstrates how to build a prediction model using data from Computational Models of Immunity - Pertussis Boost (CMI-PB) database: https://www.cmi-pb.org/. For this walkthrough, we will use batch-corrected data from the CMI-PB predictional challenge database to predict IgG titers at day 7 post-vaccination. More information about the data can be found on the CMI-PB website. 
+
+We will be predicting IgG titers using a lasso regression model. As with any machine learning model, we will need to have a prediction dataset and a training dataset. The prediction dataset will contain the data we want to predict, and the training dataset will contain the data we will use to train the model.
+
+We will start by pre-processing the data for modeling, learn how to specify and train the model, then perform a prediction of subject IgG titers at day 14 post-vaccination. 
+
+## Loading Packages
+```{r, message=FALSE, warning=FALSE}
+library(tidymodels)
+library(readr)       # for importing data
+library(ggplot2)     # for visualizing data
+library(dplyr)       # for data manipulation
+
+```
+
+
+## Load Data
+
+Let’s import our antibody titer (ab_titer) data from the CMI-PB database. You will have to download the raw datasets for from the CMI-PB website, under 'Data and Resources' tab. You will need the following files: 
+1) Prediction data: 2022BD_plasma_ab_titer.tsv, 2022BD_subject.tsv, 2022BD_specimen.tsv
+2) Training data: 2021LD_plasma_ab_titer.tsv, 2021LD_subject.tsv, 2021LD_specimen.tsv
+
+The subject and specimen tables contain metadata about the subjects and specimens, which will be helpful in our predictions. The plasma_ab_titer table contains the antibody titer data.
+
+Note: Since CMI-PB releases new data every year, the file names and data used in this walkthrough may not be the same as the data you have downloaded. If you have questions about this, there is a helpful 'Solutions Center' where you may post questions and get help from the CMI-PB community.
+
+```{r, message=FALSE, warning=FALSE}
+# Import the prediction datasets
+prediction_ab <-
+  read_tsv("2022BD_plasma_ab_titer.tsv")
+
+prediction_subject <-
+  read_tsv("2022BD_subject.tsv")
+
+prediction_specimen <-
+  read_tsv("2022BD_specimen.tsv")
+
+# Import the training datasets
+training_ab <- 
+  read_tsv("2021LD_plasma_ab_titer.tsv")
+
+training_subject <-
+  read_tsv("2021LD_subject.tsv")
+
+training_specimen <-
+  read_tsv("2021LD_specimen.tsv")
+
+```
+## Data Pre-Processing
+### Join tables
+
+We want to have a master table for each of the training and prediction datasets such that each one contains antibody titer and associated metadata. 
+
+Firstly, `subject_id` corresponds to the unique identifier for each volunteer, from which specimens (samples) are collected at different time points, designated by `specimen_id`. To obtain a master metadata table for each of the training and prediction datasets (`subject_specimen`), we will join the subject and specimen tables by `subject_id`. 
+
+Then, to attach metadata to the training and prediction data, we will join the `subject_specimen` and abtiter tables by `specimen_id`.
+
+```{r}
+# Join the subject and specimen tables by subject_id (common denominator for both tables) in the training dataset
+training_meta <- inner_join(training_subject, training_specimen, by = "subject_id")
+
+# Do the same for prediction data
+prediction_meta <- inner_join(prediction_subject, prediction_specimen, by = "subject_id")
+
+
+# Join the training antibody titer table to its metadata by specimen_id (common denominator for both tables)
+training <- inner_join(training_ab, training_meta, by = "specimen_id")
+
+# Do the same for prediction
+prediction <- inner_join(prediction_ab, prediction_meta, by = "specimen_id")
+
+```
+
+
+### Inspect the Data
+
+Now that we have our master tables for the training and prediction datasets, we can inspect the data to see what we are working with.
+
+```{r}
+# Inspect each dataset
+View(training)
+View(prediction)
+
+```
+
+Woah! That's a lot of data... Since we are only looking at IgG PT, we can filter the data to only include IgG PT.
+
+
+### Filtering for IgG PT Data
+
+We want only IgG PT, so we will reassign the `training` and `prediction` objects to only include specimens that are IgG PT.
+
+```{r}
+# Filter the data to only include IgG PT
+training <- training %>% filter(antigen == "PT", isotype == "IgG")
+prediction <- prediction %>% filter(antigen == "PT", isotype == "IgG")
+
+```
+
+Now, let's plot the data and see what we have:
+```{r}
+ggplot(training,
+       aes(actual_day_relative_to_boost, MFI_normalised,
+           col = infancy_vac,
+           group = subject_id)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept=0, linetype="dashed") +
+  geom_vline(xintercept=14, linetype="dashed") +
+  theme_bw()
+
+```
+While the overall trend is more like a curve, we can see that from day 0 to day 14, the data is more or less linear. Given that we are predicting the antibody titers at day 14, a linear model is a good starting point. 
+
+We can go one-step further and make our model more complex. If we look at the plot above, we can see that `infancy_vac` status has an influence on baseline IgG_PT values (y-intercept), and also the slope from day 0 to day 14 for each subject (each line). We can account for this later when we specify our model by adding `infancy_vac` as a predictor in the model. 
+
+Firstly, let's split the training data into a training set and a validation set. 
+
+
+## Split the Training Data
+
+In machine learning, it is important to split the training data into a training set and a validation set. The training set will be used to train the model, and the validation set will be used to evaluate the model's performance. Once we have the model, we can use it to predict the antibody titers in the prediction dataset by applying the model to the prediction dataset.
+
+You are welcome to look for other resources to help you understand this concept, since it is a fundamental concept in machine learning. Here is a helpful [article] (https://medium.com/@nahmed3536/the-motivation-for-train-test-split-2b1837f596c3#:~:text=In%20Machine%20Learning%20(ML)%20workflows,training%20and%2020%25%20for%20testing) to get you started.
+
+```{r}
+# First, we want to set the seed. The seed is a number that is used to initialize the random number generator. This ensures that the random numbers generated by the model (i.e. the training and validation sets chosen by the computer) will be the same each time the code is run. This is important for reproducibility, as it allows us to get the same results each time we run the code.
+set.seed(123) 
+
+# Here, we are using 80% of the data for training and 20% for testing. We use a special function called group_initial_split to ensure that the training and validation sets are chosen by treating data from a given subject_id as a group (it cannot be split into smaller parts by, say, actual_day_relative_to_boost). This is important, since we want to ensure that all the data for a given subject_id is either in the training set or the testing set, but not both. Otherwise, we will have data that is split up, called data leakage, which can lead to poor model performance.
+training_split <- group_initial_split(training, prop = 0.8, group = "subject_id")
+
+# Now we can extract the training and testing sets from the split
+training_train <- training_split %>% training()
+training_validation <- training_split %>% testing()
+
+# We can inspect the training and testing sets to see what they look like
+training_train
+training_validation
+
+```
+
+Now that we have our training and validation sets, we can begin setting up the model. We will use a basic linear regression model (least squares regression) to predict the antibody titers in the prediction dataset.
+
+The following utilizes the `tidymodels` framework to specify the model.
+
+The tidymodels framework is a collection of packages for modeling and machine learning using tidyverse principles. More information on this framework can be found in the following link: https://www.tidymodels.org/start/models/.
+
+
+## Preparing Baseline Value Dataframes
+
+Our ultimate goal is to have a model that predicts antibody titer as a function of `actual_day_relative_to_boost`, `infancy_vac`, and `MFI_normalised_baseline`. The reason why we want `MFI_normalised_baseline` is because we want to account for the baseline antibody titer values for each subject. In other words, any given `subject_id` will have a different baseline antibody titer value, and if we also know their `infancy_vac` status, we can use this information to predict their antibody titer at day 14. 
+
+`subject_id` is therefore not a predictor in the model, but rather a grouping variable. 
+
+To get MFI_normalised_baseline, we need to add a new column (variable) to our training and validation datasets that contains the baseline antibody titer value for each subject. We can then use this new column as a predictor in our model. 
+
+```{r}
+# Create a dataframe by filtering the baseline MFI_normalised values for each subject
+baseline_values <- training_train %>% 
+  filter(planned_day_relative_to_boost == 0)
+
+# Create a dataframe that only has baseline values excluded for each subject
+non_baseline_values <- training_train %>% 
+  filter(planned_day_relative_to_boost != 0)
+
+# Append baseline_values to non_baseline_values as a separate column and call it MFI_normalised_baseline. 
+training_df <- non_baseline_values %>% 
+  left_join(baseline_values[,c('subject_id', 'MFI_normalised')], by = "subject_id", suffix = c("", "_baseline"))
+
+
+# Do the same for training_test
+baseline_values <- training_validation %>% 
+  filter(planned_day_relative_to_boost == 0)
+
+non_baseline_values <- training_validation %>% 
+  filter(planned_day_relative_to_boost != 0)
+
+validation_df <- non_baseline_values %>% 
+  left_join(baseline_values[,c('subject_id', 'MFI_normalised')], by = "subject_id", suffix = c("", "_baseline"))
+
+# Let's also make infancy_vac column as factors, since we will be using them as factors in the model
+training_validation$infancy_vac <- as.factor(training_validation$infancy_vac)
+
+# Since our end goal is to predict day 14 antibody titers, let's also remove any data in our training and validation sets where actual_daY_relative_to_boost is greater than 14
+training_df <- training_df %>% filter(actual_day_relative_to_boost <= 14)
+validation_df <- validation_df %>% filter(actual_day_relative_to_boost <= 14)
+
+```
+
+
+## Setting Up the Model
+
+```{r}
+# Specify the model
+lm_train <- lm(MFI_normalised ~ actual_day_relative_to_boost + MFI_normalised_baseline + infancy_vac, data = training_df)
+
+# Apply lm_train to the testing data and score for accuracy
+ab_validation <- validation_df %>%
+  mutate(predicted = predict(lm_train, newdata = validation_df))
+
+```
+
+
+### Evaluating the Model
+
+Let's plot out the data to see how well our model is doing. Each graph represents a different subject, and the black line represents the predicted antibody titers. The colored points represent the actual antibody titers, and the color of the points represents whether the subject received the infancy vaccine or not.
+
+```{r}
+# Evaluate Model Using ggplot
+ggplot(ab_validation, 
+  aes(x = actual_day_relative_to_boost, y = MFI_normalised,
+      col = infancy_vac)) +
+  geom_point() +
+  geom_line(aes(y = predicted), color = "black") +
+  facet_wrap(~subject_id) +
+  theme_bw()
+
+```
+It appears our model is doing a decent job of predicting the antibody titers from d0 to d14. We can also evaluate the model more quantitatively using the Spearman correlation between predicted and actual antibody titers columns in our ab_validation dataframe.
+
+```{r}
+# Calculate the Spearman correlation
+cor.test(ab_validation$MFI_normalised, ab_validation$predicted, method = "spearman")
+
+```
+
+As given by the relatively high Spearman correlation, the model is doing a good job of predicting the antibody titers.
+
+Now that we have evaluated that our model is doing a good job of predicting antibody titers at d14, let's now predict the antibody titers in the 2022 prediction dataset using the model we just fit to the training data.
+
+
+## Predicting Antibody Titers in the Validation Dataset
+
+We need to first repeat the preprocessing steps we did for the training and validation datasets for the prediction dataset. This includes adding a new column for the baseline antibody titer values for each subject, and then using the model to predict the antibody titers at d14.
+```{r}
+# Create a dataframe that only has the baseline values for each subject
+baseline_values_predict <- prediction %>% 
+  filter(planned_day_relative_to_boost == 0)
+
+# Rename baseline values to 'MFI_normalised_baseline'
+baseline_values_predict <- baseline_values_predict %>% 
+  rename(MFI_normalised_baseline = MFI_normalised)
+
+```
+
+Now, we will use a function called `expand.grid()` to create a dataframe that specifies the d14 antibody titer predictions for each subject. We will then apply the model to this expanded dataframe to predict the antibody titers at d14 for each subject in the prediction dataset. Remember, this new dataframe must have all the predictor variables that the model was trained on!
+
+```{r}
+# Expand grid to create d14 output for each subject
+new_points <- expand.grid(actual_day_relative_to_boost = 14, 
+                          subject_id = unique(baseline_values_predict$subject_id))
+
+# Append MFI_normalised_baseline and infancy_vac values from baseline_values_predict as separate columns to create the final dataframe. We are joining by matching subject_id.
+new_points <- new_points %>% 
+  left_join(baseline_values_predict[,c('subject_id', 'MFI_normalised_baseline', 'infancy_vac')], by = "subject_id")
+
+# We now have a dataframe that contains all the information needed for the model to predict the antibody titers at d14 for each subject in the prediction dataset.
+# Apply the model to the prediction dataset
+ab_prediction <- new_points %>%
+  mutate(predicted = predict(lm_train, newdata = new_points))
+
+# Let's inspect ab_prediction to see the predicted antibody titers at d14 for each subject_id
+ab_prediction
+
+```
+
+
+## Importing Actual d14 Antibody Titers to Compare
+
+While we have been working with a 2022 dataset (prediction dataset) that only has d0 baseline values, we have access to the actual d14 antibody titers from the 2022 dataset. We can use these to compare our predicted values to the actual values. Let's get this from the CMI-PB website (2nd challenge results).
